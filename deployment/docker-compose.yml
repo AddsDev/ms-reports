@@ -1,0 +1,7 @@
+name: crediya-report-dev
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:2.6.1
+    command: -jar DynamoDBLocal.jar -sharedDb -inMemory
+    ports:
+      - "${DDB_PORT:-8000}:8000"

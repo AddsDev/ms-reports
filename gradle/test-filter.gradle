@@ -1,0 +1,23 @@
+def allowed = [':app-service',':model', ':usecase', ':dynamo-db']
+
+gradle.beforeProject { Project p ->
+    if (!allowed.contains(p.path)) {
+        p.plugins.withId('java') {
+            p.tasks.matching { it.name in [
+                    'test',
+                    'jacocoTestReport',
+                    'jacocoTestCoverageVerification',
+                    'pitest'
+            ] }.configureEach { it.enabled = false }
+        }
+
+        p.pluginManager.withPlugin('jacoco') {
+            p.tasks.matching { it.name in ['jacocoTestReport','jacocoTestCoverageVerification'] }
+                    .configureEach { it.enabled = false }
+        }
+        p.pluginManager.withPlugin('info.solidsoft.pitest') {
+            p.tasks.matching { it.name == 'pitest' }
+                    .configureEach { it.enabled = false }
+        }
+    }
+}

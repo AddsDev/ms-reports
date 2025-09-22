@@ -8,6 +8,20 @@ allprojects {
     }
 }
 
+def allowedModules = [ project(':model'), project(':usecase'), project(':dynamo-db') ]
+def mergedExcludes = [
+        "co/com/bancolombia/api/report/mapper/**",
+        "co/com/bancolombia/metrics/aws/**",
+        "co/com/bancolombia/sqs/listener/**",
+        "co/com/bancolombia/loggeradapter/**",
+        "co/com/bancolombia/security/**",
+        "co/com/bancolombia/dynamodb/helper/**",
+        "co/com/bancolombia/dynamodb/mapper/**",
+        "co/com/bancolombia/api/config/**",
+        "co/com/bancolombia/api/handler/**",
+        "co/com/bancolombia/config/**Configuration.*",
+]
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'jacoco'
@@ -28,6 +42,7 @@ subprojects {
     }
 
     dependencies {
+        implementation platform('software.amazon.awssdk:bom:2.33.1')
         implementation 'io.projectreactor:reactor-core'
         implementation 'io.projectreactor.addons:reactor-extra'
 
@@ -37,9 +52,9 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
-        testCompileOnly  "org.projectlombok:lombok:${lombokVersion}"
-        testAnnotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
         implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     }
 
@@ -55,7 +70,18 @@ subprojects {
 
     pitest {
         targetClasses = ['co.com.bancolombia.*']
-        excludedClasses = []
+        excludedClasses = [
+                'co.com.bancolombia.api.report.mapper.*',
+                'co.com.bancolombia.metrics.aws.*',
+                'co.com.bancolombia.sqs.listener.*',
+                'co.com.bancolombia.loggeradapter.*',
+                'co.com.bancolombia.security.*',
+                'co.com.bancolombia.dynamodb.helper.*',
+                'co.com.bancolombia.dynamodb.mapper.*',
+                'co.com.bancolombia.api.config.*',
+                'co.com.bancolombia.api.handler.*',
+                'co.com.bancolombia.config.*Configuration.*',
+        ]
         excludedTestClasses = []
         pitestVersion = '1.20.1'
         verbose = false
@@ -73,6 +99,11 @@ subprojects {
 
     jacocoTestReport {
         dependsOn test, 'pitest'
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect{
+                fileTree(dir: it, excludes: mergedExcludes)
+            }))
+        }
         reports {
             xml.setRequired true
             xml.setOutputLocation layout.buildDirectory.file("reports/jacoco.xml")
@@ -88,12 +119,28 @@ jacoco {
     reportsDirectory.set(layout.buildDirectory.dir("reports"))
 }
 
+
 tasks.register('jacocoMergedReport', JacocoReport) {
-    dependsOn = [test, subprojects.jacocoTestReport, pitestReportAggregate]
-    additionalSourceDirs.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories.setFrom files(subprojects.sourceSets.main.output)
-    executionData.setFrom project.fileTree(dir: '.', include: '**/build/jacoco/test.exec')
+    dependsOn = allowedModules.collect { it.tasks.jacocoTestReport }
+
+    def srcDirs = allowedModules.collectMany { it.sourceSets.main.allSource.srcDirs }
+
+    additionalSourceDirs.setFrom(files(srcDirs))
+    sourceDirectories.setFrom(files(srcDirs))
+
+    def classTrees = allowedModules.collectMany { p ->
+        p.sourceSets.main.output.classesDirs.files.collect { dir ->
+            fileTree(dir: dir, excludes: mergedExcludes)
+        }
+    }
+
+    classDirectories.setFrom(classTrees)
+
+    def execs = allowedModules.collect { p ->
+        fileTree(dir: p.rootDir, include: ['**/jacoco/test.exec', '**/jacoco/test.exec.gz', '**/*.exec'])
+    }
+    executionData.setFrom(files(execs))
+
     reports {
         xml.setRequired true
         csv.setRequired false

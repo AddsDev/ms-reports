@@ -1,0 +1,16 @@
+server:
+  port: 8085
+
+spring:
+  main:
+    lazy-initialization: true
+cors:
+  allowed-origins: "http://localhost:4200,http://localhost:8080,http://localhost:8085"
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  show-actuator: true

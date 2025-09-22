@@ -1,17 +1,23 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.model.common.gateways.TraceLoggerPort;
+import co.com.bancolombia.model.report.gateways.ReportCounterPort;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UseCasesConfigTest {
+@TestConfiguration
+@Import(UseCasesConfig.class)
+class UseCasesConfigTest {
 
     @Test
     void testUseCaseBeansExist() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class)) {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(this.getClass())) {
             String[] beanNames = context.getBeanDefinitionNames();
 
             boolean useCaseBeanFound = false;
@@ -26,19 +32,13 @@ public class UseCasesConfigTest {
         }
     }
 
-    @Configuration
-    @Import(UseCasesConfig.class)
-    static class TestConfig {
-
-        @Bean
-        public MyUseCase myUseCase() {
-            return new MyUseCase();
-        }
+    @Bean
+    public ReportCounterPort reportCounterPort() {
+        return Mockito.mock(ReportCounterPort.class);
     }
 
-    static class MyUseCase {
-        public String execute() {
-            return "MyUseCase Test";
-        }
+    @Bean
+    public TraceLoggerPort traceLoggerPort() {
+        return Mockito.mock(TraceLoggerPort.class);
     }
 }

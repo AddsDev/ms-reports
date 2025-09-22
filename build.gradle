@@ -3,9 +3,13 @@ buildscript {
 		cleanArchitectureVersion = '3.26.1'
 		springBootVersion = '3.5.4'
 		sonarVersion = '6.3.1.5724'
+		openapiVersion = '1.9.0'
 		jacocoVersion = '0.8.13'
 		pitestVersion = '1.19.0-rc.1'
         lombokVersion = '1.18.38'
+        mapStructVersion = '1.6.3'
+        slf4jVersion = '2.0.13'
+        springDocs = '2.8.13'
 	}
 }
 
@@ -15,6 +19,7 @@ plugins {
 	id 'info.solidsoft.pitest' version "${pitestVersion}" apply false
 	id 'org.sonarqube' version "${sonarVersion}"
 	id 'jacoco'
+    id "org.springdoc.openapi-gradle-plugin" version "${openapiVersion}"
 }
 
 sonar {

@@ -1,22 +1,16 @@
 server:
   port: 8082
 spring:
-  application:
-    name: "loan-reports"
-  devtools:
-    restart:
-      enabled: false
-    add-properties: false
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: "${AUTH_JWKS_URI:http://localhost:8080}/.well-known/jwks.json"
           issuer-uri: "${AUTH_ISSUER_URI:http://localhost:8080}"
-  profiles:
-    active: local
+  h2:
+    console:
+      enabled: false
 aws:
-  region: "us-east-1"
   dynamodb:
     endpoint: "http://localhost:8000"
 management:
@@ -29,7 +23,7 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080,http://localhost:8085"
+  allowed-origins: "http://localhost:4200,http://localhost:8082"
 entrypoint:
   sqs:
     region: "us-east-1"
@@ -38,7 +32,6 @@ entrypoint:
     maxNumberOfMessages: 10
     visibilityTimeoutSeconds: 10
     numberOfThreads: 1
-
 springdoc:
   api-docs:
     path: /v3/api-docs

@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: "${SERVER_HOST:8082}"
 spring:
   security:
     oauth2:
@@ -12,7 +12,7 @@ spring:
       enabled: false
 aws:
   dynamodb:
-    endpoint: "http://localhost:8000"
+    endpoint: "${DYNAMO_HOST:http://localhost:8000}"
 management:
   endpoints:
     web:
@@ -23,15 +23,15 @@ management:
       probes:
         enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8082"
+  allowed-origins: "${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8080,http://localhost:8085}"
 entrypoint:
   sqs:
-    region: "us-east-1"
-    queueUrl: "https://sqs.us-east-1.amazonaws.com/155974034244/loan_reports_queue"
-    waitTimeSeconds: 20
-    maxNumberOfMessages: 10
-    visibilityTimeoutSeconds: 10
-    numberOfThreads: 1
+    region: "${AWS_REGION:us-east-1}"
+    queueUrl: "${SQS_LOAN_QUEUE:https://sqs.us-east-1.amazonaws.com/155974034244/loan_reports_queue}"
+    waitTimeSeconds: "${SQS_WAIT_TIME:20}"
+    maxNumberOfMessages: "${SQS_MAX_MESSAGE:10}"
+    visibilityTimeoutSeconds: "${SQS_VISIBILITY_TIME:10}"
+    numberOfThreads: "${SQS_NUMBER_THREADS:1}"
 springdoc:
   api-docs:
     path: /v3/api-docs
